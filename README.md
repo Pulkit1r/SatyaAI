@@ -46,6 +46,9 @@ SatyaAI enables:
   - Temporal pattern analysis
 - **Professional PDF reports** for sharing and archival
 - **Flexible export options** (JSON, CSV, PDF)
+- Database backup & restore system with cross-platform support
+- Light & dark theme support with persistent preferences
+- Interactive analytics dashboard with real-time visualizations
 
 This transforms misinformation handling from reactionary fact-checking into **proactive narrative intelligence**.
 
@@ -58,11 +61,14 @@ SatyaAI follows a layered multimodal memory architecture:
 ### Core Layers
 
 **1. User Interface Layer** (Streamlit Dashboard)
-- Tab-based navigation for different workflows
-- Real-time analytics visualization with matplotlib
+- 9 interactive tabs for comprehensive workflows
+- Theme manager with light/dark mode toggle and persistence
+- Real-time analytics visualization with matplotlib & plotly
 - Interactive trust report generation
+- Backup management interface with one-click operations
 - Export and data management interfaces
-- System status monitoring
+- System status monitoring with health checks
+- Mode selection: Journalist, Government Analyst, Social Media Monitor,      Researcher
 
 **2. Multimodal Ingestion Layer**
 - Text claims processing with validation
@@ -80,6 +86,7 @@ SatyaAI follows a layered multimodal memory architecture:
 - Semantic similarity search with cosine distance
 - Persistent storage with rich metadata filtering
 - Narrative-level grouping via `narrative_id`
+- Backup-friendly architecture with clear data separation
 
 **5. Narrative Intelligence Layer**
 - Temporal pattern detection
@@ -94,7 +101,16 @@ SatyaAI follows a layered multimodal memory architecture:
 - Platform risk scoring
 - Coordinated campaign identification
 - Professional PDF report generation with ReportLab
+- Interactive visualizations with matplotlib & plotly
 - Bulk JSON/CSV exports
+
+**7. Backup & Storage Layer**
+- Automated backup creation with timestamps (YYYYMMDD_HHMMSS)
+- Backup metadata management (size, description, creation date)
+- Restore with safety backups (automatic rollback on failure)
+- Backup retention policies (keeps last 10, auto-cleanup)
+- Cross-platform path handling (Windows/Mac/Linux compatible)
+- Lock file exclusion to prevent corruption
 
 **All system intelligence is retrieval-driven and grounded in stored evidence.**
 
@@ -110,6 +126,7 @@ Qdrant serves as the primary long-term vector memory system.
 - Structured payload filtering and metadata queries
 - Narrative-level grouping across modalities
 - Scalable persistent memory with disk storage
+- Backup-friendly architecture with clean data separation
 
 **SatyaAI does not use Qdrant as simple storage — it is the core cognitive substrate of the system.**
 
@@ -133,82 +150,6 @@ qdrant_data/
 - `path`: File location (for images/video frames)
 
 ---
-
-## 📁 Project Structure
-```
-SatyaAI/
-├── core/                           # Core system logic
-│   ├── analytics/                  # Analytics engines
-│   │   ├── __init__.py
-│   │   └── trend_detector.py       # Viral detection, clustering, campaigns
-│   ├── embeddings/                 # Embedding generators
-│   │   ├── image_embedder.py       # CLIP for images
-│   │   ├── text_embedder.py        # Sentence transformers
-│   │   └── video_processor.py      # Frame extraction
-│   ├── exports/                    # Export functionality
-│   │   ├── __init__.py
-│   │   ├── csv_exporter.py         # CSV generation
-│   │   ├── json_exporter.py        # JSON exports
-│   │   └── pdf_exporter.py         # Professional PDF reports
-│   ├── memory/                     # Memory operations
-│   │   ├── image_search.py         # Visual similarity search
-│   │   ├── image_store.py          # Image storage
-│   │   ├── text_search.py          # Semantic text search
-│   │   ├── text_store.py           # Text storage
-│   │   ├── video_search.py         # Video frame search
-│   │   └── video_store.py          # Video processing & storage
-│   ├── narratives/                 # Narrative intelligence
-│   │   ├── decay_engine.py         # Memory strength calculation
-│   │   ├── narrative_evolution.py  # Drift detection
-│   │   ├── narrative_explorer.py   # Data retrieval
-│   │   ├── narrative_graph.py      # NetworkX graph representation
-│   │   ├── narrative_intelligence.py  # Stats & threat scoring
-│   │   ├── narrative_manager.py    # Claim/image processing
-│   │   ├── state_engine.py         # State classification
-│   │   └── temporal_engine.py      # Temporal pattern detection
-│   ├── qdrant/                     # Vector database
-│   │   ├── client.py               # Qdrant connection & collections
-│   │   └── schema.py               # Collection setup
-│   ├── reports/                    # Report generation
-│   │   ├── evidence_engine.py      # Evidence scoring
-│   │   ├── resurgence_engine.py    # Resurgence calculation
-│   │   ├── responsibility.py       # Attribution logic
-│   │   ├── risk_engine.py          # Risk assessment
-│   │   └── trust_report.py         # Trust report generation
-│   ├── utils/                      # Utilities
-│   │   └── validators.py           # Input validation
-│   └── config.py                   # System configuration
-├── ui/                             # User interface
-│   ├── modules/                    # UI modules (not Streamlit pages)
-│   │   ├── __init__.py
-│   │   ├── analytics_page.py       # Analytics dashboard renderer
-│   │   └── exports_page.py         # Export interface renderer
-│   └── app.py                      # Main Streamlit application
-├── data/                           # Data storage
-│   └── uploads/                    # Uploaded files (images, videos)
-├── exports/                        # Generated exports
-│   ├── *.json                      # JSON exports
-│   ├── *.csv                       # CSV exports
-│   └── *.pdf                       # PDF reports
-├── qdrant_data/                    # Qdrant persistent storage
-│   ├── collection/
-│   ├── meta.json
-│   └── storage.sqlite
-├── tests/                          # Test suite
-│   ├── unit/                       # Unit tests
-│   └── integration/                # Integration tests
-├── demo/                           # Demo materials
-│   └── screenshots/                # Application screenshots
-├── .gitignore                      # Git ignore rules
-├── requirements.txt                # Python dependencies
-├── quick_setup.py                  # Quick setup with demo data
-├── quick_test.py                   # Manual testing script
-├── diagnostic_check.py             # System diagnostic tool
-├── test_pages.py                   # UI page testing
-├── run_tests.py                    # Test runner
-├── README.md                       # This file
-└── TESTING.md                      # Testing documentation
-```
 
 ---
 
@@ -296,6 +237,7 @@ Identifies narratives spreading rapidly across platforms:
 - **Platform diversity score:** Number of unique sources
 - **Risk scoring:** Combination of velocity, diversity, and recency
 - **Threshold:** 3+ recent mentions with 30%+ velocity
+- **Interactive visualizations** with color-coded risk levels
 
 ### Platform Risk Assessment
 Evaluates platform-level threat patterns:
@@ -303,6 +245,7 @@ Evaluates platform-level threat patterns:
 - **High-risk narrative counts**
 - **Total mention volume**
 - **Risk levels:** CRITICAL (100+), HIGH (60+), MEDIUM (30+), LOW (<30)
+- **Horizontal bar charts** with threshold reference lines
 
 ### Coordinated Campaign Detection
 Identifies potential coordination patterns:
@@ -310,6 +253,7 @@ Identifies potential coordination patterns:
 - **Multiple narratives (3+) threshold**
 - **Coordination score based on narrative count**
 - **Temporal grouping analysis**
+- **Campaign strength visualization** with metrics
 
 ### Narrative Clustering
 Ecosystem-wide statistics:
@@ -318,6 +262,7 @@ Ecosystem-wide statistics:
 - Modality distribution
 - Yearly activity patterns
 - Peak activity identification
+- Real-time charts with matplotlib & plotly
 
 ---
 
@@ -407,7 +352,17 @@ The SatyaAI dashboard provides **7 main tabs:**
 - **Temporal activity charts**
 - **Content distribution analysis**
 
+### 8. 💾 Backup
+
+- **One-click database backup** with custom descriptions
+- **Restore from backup** with safety checks and rollback
+- **Backup list management** with size and metadata display
+- **Auto-backup** with retention policy (keeps last 10)
+- **Refresh functionality** to update backup list
+- **Cross-platform support** (Windows/Mac/Linux)
+
 **Additional Features:**
+- **Theme Toggle:** Light/Dark mode in sidebar with persistent selection
 - **Sidebar:** System status, ethics reminder, project info
 - **Mode selection:** Journalist, Government Analyst, Social Media Monitor, Researcher
 - **Real-time updates:** Metrics refresh on data changes
@@ -509,7 +464,7 @@ cd SatyaAI
 python -m venv venv
 
 # Windows
-venv\Scripts\activate
+venv311\Scripts\activate
 
 # Linux/Mac
 source venv/bin/activate
@@ -630,6 +585,7 @@ See `TESTING.md` for detailed testing documentation.
 - **Visualization**
   - Matplotlib - Charts and graphs
   - NetworkX - Graph visualization
+  - Plotly - Interactive visualizations
 
 - **Export & Reporting**
   - ReportLab - Professional PDF generation
@@ -644,30 +600,6 @@ See `TESTING.md` for detailed testing documentation.
 - **OS:** Windows 10+, Linux, macOS
 - **Storage:** 2GB for Qdrant + data
 - **Network:** Required for initial model downloads
-
----
-
-## 🚀 Deployment Considerations
-
-### Local Deployment
-
-- Single-user setup with Streamlit
-- Persistent Qdrant storage on disk
-- Suitable for research and testing
-
-### Production Deployment
-
-**Recommended stack:**
-- **Frontend:** Streamlit Cloud or custom server
-- **Vector DB:** Qdrant Cloud or self-hosted cluster
-- **Storage:** Cloud storage for uploads (S3, GCS)
-- **Monitoring:** Application logs and metrics
-
-**Scaling considerations:**
-- Qdrant supports distributed deployment
-- Horizontal scaling for ingestion workers
-- CDN for static assets
-- Database backup strategies
 
 ---
 
@@ -738,27 +670,6 @@ We welcome contributions! Areas of interest:
 
 ---
 
-
-## 🙏 Acknowledgments
-
-**Technologies:**
-- Qdrant team for the excellent vector database
-- Hugging Face for Sentence Transformers
-- OpenAI for CLIP embeddings
-- Streamlit for the intuitive framework
-
-**Inspiration:**
-- Research on information ecosystems
-- Fact-checking organizations
-- Misinformation research community
-
----
-
-## 📧 Contact & Support
-
-**For issues:**
-- Open an issue on GitHub
-
 ## 🔮 Future Roadmap
 
 ### Short-term (3-6 months)
@@ -781,26 +692,6 @@ We welcome contributions! Areas of interest:
 - [ ] Integration with fact-checking APIs
 - [ ] Browser extension
 - [ ] Public narrative database (with privacy controls)
-
----
-
-## 📚 Additional Resources
-
-**Documentation:**
-- `TESTING.md` - Comprehensive testing guide
-- `core/config.py` - Configuration options
-- `requirements.txt` - Dependency versions
-
-**Scripts:**
-- `quick_setup.py` - Initialize with demo data
-- `quick_test.py` - Manual functionality test
-- `diagnostic_check.py` - System health check
-- `run_tests.py` - Automated test suite
-
-**Examples:**
-- Demo data in `quick_setup.py`
-- Test cases in `tests/` directory
-- UI examples in `test_pages.py`
 
 ---
 
