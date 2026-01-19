@@ -21,7 +21,7 @@ tab1, tab2 = st.tabs(["Analytics", "Exports"])
 with tab1:
     st.header("Testing Analytics Page")
     try:
-        from ui.pages.analytics import render_analytics_page
+        from ui.modules.analytics_page import render_analytics_page
         render_analytics_page(narratives)
         st.success("✅ Analytics page rendered")
     except Exception as e:
@@ -32,7 +32,7 @@ with tab1:
 with tab2:
     st.header("Testing Exports Page")
     try:
-        from ui.pages.exports import render_export_page
+        from ui.modules.exports_page import render_export_page
         render_export_page(narratives)
         st.success("✅ Exports page rendered")
     except Exception as e:

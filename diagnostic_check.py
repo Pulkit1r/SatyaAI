@@ -27,13 +27,13 @@ for file in files_to_check:
 # Check 2: Import test
 print("\n2️⃣ Testing imports...")
 try:
-    from ui.pages.analytics import render_analytics_page
+    from ui.modules.analytics_page import render_analytics_page
     print("   ✅ analytics.render_analytics_page")
 except Exception as e:
     print(f"   ❌ analytics import failed: {e}")
 
 try:
-    from ui.pages.exports import render_export_page
+    from ui.modules.exports_page import render_export_page
     print("   ✅ exports.render_export_page")
 except Exception as e:
     print(f"   ❌ exports import failed: {e}")

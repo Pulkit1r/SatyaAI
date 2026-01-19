@@ -4,6 +4,8 @@ Enhanced Analytics dashboard for SatyaAI with always-visible content
 import streamlit as st
 import matplotlib.pyplot as plt
 from datetime import datetime
+import plotly.graph_objects as go
+import plotly.express as px
 
 # Try importing analytics modules with fallback
 ANALYTICS_AVAILABLE = False
@@ -19,6 +21,13 @@ try:
     ANALYTICS_AVAILABLE = True
 except ImportError as e:
     IMPORT_ERROR = str(e)
+
+# Try importing notifications
+try:
+    from core.notifications.notifier import send_alert
+    NOTIFICATIONS_ENABLED = True
+except ImportError:
+    NOTIFICATIONS_ENABLED = False
 
 
 def render_analytics_page(narratives):
@@ -190,22 +199,35 @@ def render_analytics_page(narratives):
                 st.info("No modality data available")
         
         with col2:
-            # Yearly activity
+            # Yearly activity - PLOTLY VERSION
             st.subheader("📅 Temporal Activity Pattern")
             yearly = cluster_stats.get('yearly_activity', {})
             
             if yearly and len(yearly) > 0:
-                fig, ax = plt.subplots(figsize=(6, 4))
+                # Create Plotly chart instead of matplotlib
                 years = list(yearly.keys())
                 counts = list(yearly.values())
-                ax.plot(years, counts, marker='o', linewidth=2, markersize=8, color='#4fd1c5')
-                ax.fill_between(years, counts, alpha=0.3, color='#4fd1c5')
-                ax.set_xlabel('Year')
-                ax.set_ylabel('Memory Points')
-                ax.set_title('Activity Over Time')
-                ax.grid(True, alpha=0.3)
-                st.pyplot(fig)
-                plt.close()
+                
+                fig = go.Figure()
+                fig.add_trace(go.Scatter(
+                    x=years,
+                    y=counts,
+                    mode='lines+markers',
+                    line=dict(color='#4fd1c5', width=3),
+                    marker=dict(size=10),
+                    fill='tozeroy',
+                    fillcolor='rgba(79, 209, 197, 0.3)'
+                ))
+                
+                fig.update_layout(
+                    title='Activity Over Time',
+                    xaxis_title='Year',
+                    yaxis_title='Memory Points',
+                    template='plotly_dark',
+                    height=400
+                )
+                
+                st.plotly_chart(fig, use_container_width=True)
                 
                 peak_year = max(yearly.items(), key=lambda x: x[1])
                 st.info(f"📈 Peak: **{peak_year[0]}** ({peak_year[1]} memories)")
@@ -229,6 +251,22 @@ def render_analytics_page(narratives):
         if viral and len(viral) > 0:
             st.success(f"🚨 **{len(viral)} viral narratives detected!**")
             
+            # Send notifications for high-risk viral narratives
+            if NOTIFICATIONS_ENABLED:
+                for v in viral[:3]:
+                    if v['risk_score'] > 70:
+                        try:
+                            send_alert(
+                                v['narrative_id'],
+                                "HIGH",
+                                f"Viral narrative detected with risk score {v['risk_score']}",
+                                {"velocity": v['velocity'], "platforms": v['platforms']}
+                            )
+                        except:
+                            pass
+            
+            # Show as table
+            st.markdown("### Top Viral Narratives")
             for idx, v in enumerate(viral[:5], 1):
                 risk_color = "🔴" if v['risk_score'] > 70 else "🟠" if v['risk_score'] > 40 else "🟡"
                 
@@ -303,6 +341,20 @@ def render_analytics_page(narratives):
         
         if campaigns and len(campaigns) > 0:
             st.warning(f"⚠️ **{len(campaigns)} potential campaigns detected!**")
+            
+            # Send notifications for campaigns
+            if NOTIFICATIONS_ENABLED:
+                for c in campaigns[:2]:
+                    if c.get('coordination_score', 0) > 50:
+                        try:
+                            send_alert(
+                                "CAMPAIGN",
+                                "MEDIUM",
+                                f"Coordinated campaign detected: {c.get('narrative_count')} narratives on {c.get('platform')}",
+                                c
+                            )
+                        except:
+                            pass
             
             for idx, c in enumerate(campaigns[:5], 1):
                 coord_score = c.get('coordination_score', 0)

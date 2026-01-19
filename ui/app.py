@@ -1,7 +1,6 @@
 import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-
 import streamlit as st
 
 # ⚠️ CRITICAL: set_page_config MUST BE FIRST
@@ -11,9 +10,16 @@ st.set_page_config(
     layout="centered"
 )
 
+# Initialize theme
+if 'theme' not in st.session_state:
+    st.session_state.theme = 'dark'
+
+# Apply theme
+from ui.modules.theme_manager import apply_theme, render_theme_selector
+apply_theme(st.session_state.theme)
+
 import json
 import matplotlib.pyplot as plt
-
 from core.narratives.narrative_manager import process_new_claim, process_new_image
 from core.reports.trust_report import generate_trust_report
 from core.narratives.narrative_explorer import get_all_narratives
@@ -22,7 +28,6 @@ from core.memory.image_search import search_images
 from core.memory.video_store import store_video
 from core.memory.video_search import search_video_frames
 from core.embeddings.video_processor import extract_frames
-
 from core.utils.validators import (
     validate_claim_text, 
     validate_year, 
@@ -39,7 +44,6 @@ except ImportError:
     UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
     APP_TITLE = "SatyaAI — Digital Trust Memory System"
     APP_ICON = "🧠"
-
 
 # Auto-load demo data if system is empty
 if 'demo_data_loaded' not in st.session_state:
@@ -67,10 +71,9 @@ if 'demo_data_loaded' not in st.session_state:
                         pass
                 
                 st.success("✅ Demo data loaded successfully!")
-        st.session_state.demo_data_loaded = True
+                st.session_state.demo_data_loaded = True
     except:
         st.session_state.demo_data_loaded = True
-
 
 st.markdown("""
 <style>
@@ -110,20 +113,23 @@ elif mode == "Social Media Monitor":
 elif mode == "Researcher":
     st.info("Mode: Studying long-term evolution of misinformation.")
 
+# Theme selector at top of sidebar
+current_theme = render_theme_selector()
+
 st.sidebar.title(f"{APP_ICON} SatyaAI")
 st.sidebar.markdown("""
-### Digital Trust Memory System
+**Digital Trust Memory System**
 
 SatyaAI is not a fact-checker.  
-It is a **long-term misinformation memory engine.**
+It is a long-term misinformation memory engine.
 
 It:
-- Remembers misinformation  
-- Tracks recurring narratives  
-- Reconstructs claim history  
-- Detects resurfacing patterns  
+- Remembers misinformation
+- Tracks recurring narratives
+- Reconstructs claim history
+- Detects resurfacing patterns
 
-Built using **Qdrant vector memory**.
+Built using Qdrant vector memory.
 """)
 
 st.sidebar.markdown("---")
@@ -132,9 +138,9 @@ st.sidebar.info("""
 Misinformation doesn't disappear.  
 It comes back.
 
-SatyaAI was built to remember:
-what was said,
-what was shown,
+SatyaAI was built to remember:  
+what was said,  
+what was shown,  
 and how narratives evolve.
 """)
 
@@ -149,12 +155,19 @@ except Exception as e:
     st.sidebar.error("❌ System Error")
     st.sidebar.error(f"Details: {str(e)}")
 
+# Notification badge
+try:
+    from ui.modules.notifications_page import show_notification_badge
+    show_notification_badge()
+except:
+    pass
+
 st.sidebar.markdown("---")
 st.sidebar.warning("""
-⚖️ Ethics Note:
-SatyaAI does not declare truth.
-It provides memory, history,
-and patterns to support
+⚖️ **Ethics Note:**  
+SatyaAI does not declare truth.  
+It provides memory, history,  
+and patterns to support  
 human decision-making.
 """)
 
@@ -168,7 +181,7 @@ except Exception as e:
     total_narratives = 0
     total_memories = 0
 
-st.title(f"{APP_ICON} SatyaAI – Digital Trust Memory System")
+st.title(f"{APP_ICON} SatyaAI — Digital Trust Memory System")
 st.write("An AI system that remembers misinformation narratives over time.")
 
 c1, c2 = st.columns(2)
@@ -191,14 +204,15 @@ if all_narratives:
 
 st.markdown("---")
 
-tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs([
+tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8 = st.tabs([
     "➕ Add New Claim",
     "🔍 Analyze Claim",
     "🖼 Analyze Image",
     "🎥 Analyze Video",
     "🧬 Explore Narratives",
     "📤 Export & Reports",
-    "📊 Analytics"
+    "📊 Analytics",
+    "💾 Backup"
 ])
 
 with tab1:
@@ -206,7 +220,7 @@ with tab1:
     claim = st.text_area("Enter claim or news text", height=100)
     year = st.text_input("Year (e.g. 2024)", value="2024")
     source = st.text_input("Source (twitter, news, whatsapp, etc.)", value="twitter")
-
+    
     if st.button("Store Text Claim", type="primary"):
         try:
             if not claim.strip():
@@ -226,11 +240,11 @@ with tab1:
             st.error(f"❌ Validation Error: {str(e)}")
         except Exception as e:
             st.error(f"❌ Error: {str(e)}")
-
+    
     st.markdown("---")
     st.markdown("### 🖼 Upload Image")
     image = st.file_uploader("Upload image", type=["png", "jpg", "jpeg", "jfif", "webp"])
-
+    
     if image:
         try:
             path = UPLOAD_DIR / image.name
@@ -246,11 +260,11 @@ with tab1:
                     st.error(f"❌ {str(e)}")
         except Exception as e:
             st.error(f"❌ Error processing image: {str(e)}")
-
+    
     st.markdown("---")
     st.markdown("### 🎥 Upload Video")
     video = st.file_uploader("Upload video", type=["mp4", "mov", "avi"])
-
+    
     if video:
         try:
             vpath = UPLOAD_DIR / video.name
@@ -272,8 +286,9 @@ with tab2:
         "Old vaccine rumor resurfaces",
         "Government hid flood data"
     ])
+    
     query = demo if demo else st.text_area("Enter claim to analyze", height=100)
-
+    
     if st.button("Generate Trust Report", type="primary"):
         if not query.strip():
             st.warning("⚠️ Please enter a claim to analyze.")
@@ -281,7 +296,7 @@ with tab2:
             try:
                 with st.spinner("Analyzing narrative memory..."):
                     report = generate_trust_report(query)
-
+                
                 if report["status"] == "no_history":
                     st.info("ℹ️ No similar history found in the system.")
                 else:
@@ -289,17 +304,17 @@ with tab2:
                     st.markdown(f"## 🧠 Narrative ID: `{report['narrative_id']}`")
                     
                     col1, col2, col3 = st.columns(3)
-                    col1.metric("🔁 Occurrences", report["occurrence_count"])
+                    col1.metric("🔍 Occurrences", report["occurrence_count"])
                     col2.metric("⚠️ Risk Level", risk["risk_level"])
                     col3.metric("📊 Risk Score", risk["risk_score"])
-
+                    
                     if report["occurrence_count"] >= 3:
                         st.error("🚨 **ALERT:** Resurfacing Narrative Detected")
                     elif report["occurrence_count"] == 2:
                         st.warning("⚠️ **WARNING:** Repeated Claim Detected")
                     else:
                         st.success("✅ New or Rare Claim")
-
+                    
                     st.markdown("---")
                     st.markdown("### 📋 Basic Information")
                     info_col1, info_col2 = st.columns(2)
@@ -309,11 +324,11 @@ with tab2:
                     with info_col2:
                         st.write(f"**Lifespan:** {report['lifespan']} years")
                         st.write(f"**Platforms:** {', '.join(report['sources_seen'])}")
-
+                    
                     st.info(f"💡 **Insight:** {report['insight']}")
                     st.markdown("---")
                     st.markdown("## 🧠 Narrative Intelligence")
-
+                    
                     intel_col1, intel_col2, intel_col3 = st.columns(3)
                     threat_level = report.get("threat_level", "UNKNOWN")
                     threat_colors = {"CRITICAL": "🔴", "HIGH": "🟠", "MEDIUM": "🟡", "LOW": "🟢"}
@@ -321,16 +336,16 @@ with tab2:
                     
                     intel_col1.metric("⚠️ Threat Level", f"{threat_icon} {threat_level}")
                     intel_col2.metric("💪 Narrative Strength", f"{report.get('strength', 0)}/100")
-                    intel_col3.metric("🔁 Resurfacing", "YES ✅" if report.get("resurfacing") else "NO ❌")
-
+                    intel_col3.metric("🔄 Resurfacing", "YES ✅" if report.get("resurfacing") else "NO ❌")
+                    
                     st.write(f"**🧬 Modalities:** {', '.join(report.get('modalities', []))}")
                     st.write(f"**📊 Memory Strength:** {report.get('memory_strength', 0)}")
                     st.write(f"**🎯 State:** {report.get('narrative_state', 'Unknown')}")
-
+                    
                     st.markdown("---")
                     st.markdown("### 📈 Temporal Activity")
                     years = [int(t["year"]) for t in report["timeline"] if str(t.get("year", "")).isdigit()]
-
+                    
                     if years:
                         fig, ax = plt.subplots(figsize=(10, 4))
                         ax.hist(years, bins=range(min(years), max(years)+2), color='#4fd1c5', alpha=0.7, edgecolor='black')
@@ -340,13 +355,13 @@ with tab2:
                         ax.grid(axis='y', alpha=0.3)
                         st.pyplot(fig)
                         plt.close()
-
+                    
                     st.markdown("---")
                     st.markdown("### 🕒 Narrative Timeline")
                     for idx, t in enumerate(report["timeline"], 1):
                         claim_text = t.get('claim', '[Visual content]')
                         st.write(f"**{idx}.** {t['year']} | 📱 {t['source']} | {claim_text[:100]}... | *Score: {t['score']:.3f}*")
-
+                    
                     st.markdown("---")
                     action_col1, action_col2 = st.columns(2)
                     
@@ -361,29 +376,29 @@ with tab2:
                     with action_col2:
                         if st.button("🚩 Flag as High-Risk", type="secondary"):
                             st.success("✅ Narrative flagged for manual review")
-
+            
             except Exception as e:
                 st.error(f"❌ Error generating report: {str(e)}")
 
 with tab3:
     st.subheader("🖼 Analyze an Image")
     uploaded = st.file_uploader("Upload an image to analyze", type=["jpg", "jpeg", "png", "jfif", "webp"], key="analyze_image")
-
+    
     if uploaded:
         try:
             path = UPLOAD_DIR / uploaded.name
             with open(path, "wb") as f:
                 f.write(uploaded.read())
             st.image(str(path), caption="Uploaded Image", width=400)
-
+            
             if st.button("Analyze Image Memory", type="primary"):
                 with st.spinner("Searching visual memory..."):
                     narrative_id = process_new_image(str(path), {"source": "user_upload"})
                     st.success(f"✅ Image linked to narrative: **{narrative_id}**")
                     results = search_images(str(path), limit=5)
-
+                    
                     if results:
-                        st.markdown("### 🔁 Similar Past Visuals Found")
+                        st.markdown("### 🔍 Similar Past Visuals Found")
                         st.write(f"Found {len(results)} similar images:")
                         for idx, r in enumerate(results, 1):
                             p = r.payload
@@ -399,14 +414,14 @@ with tab3:
 with tab4:
     st.subheader("🎥 Analyze a Video")
     uploaded_video = st.file_uploader("Upload a video to analyze", type=["mp4", "mov", "avi"], key="analyze_video")
-
+    
     if uploaded_video:
         try:
             video_path = UPLOAD_DIR / uploaded_video.name
             with open(video_path, "wb") as f:
                 f.write(uploaded_video.read())
             st.video(str(video_path))
-
+            
             if st.button("Analyze Video Memory", type="primary"):
                 with st.spinner("Extracting frames and searching visual memory..."):
                     frames = extract_frames(str(video_path))
@@ -421,7 +436,7 @@ with tab4:
                             if nid:
                                 narrative_hits[nid] = narrative_hits.get(nid, 0) + 1
                         progress_bar.progress((idx + 1) / min(5, len(frames)))
-
+                    
                     if narrative_hits:
                         st.success(f"✅ Found matches in {len(narrative_hits)} narratives!")
                         st.markdown("### 🎯 Related Narratives")
@@ -435,10 +450,10 @@ with tab4:
 with tab5:
     st.subheader("🧬 Narrative Memory Explorer")
     st.write("Explore all long-term misinformation narratives stored in SatyaAI.")
-
+    
     try:
         narratives = get_all_narratives()
-
+        
         if not narratives:
             st.info("ℹ️ No narratives found yet. Add some data first.")
         else:
@@ -489,30 +504,23 @@ with tab5:
         st.error(f"❌ Error loading narratives: {str(e)}")
 
 with tab6:
-    try:
-        from ui.pages.exports import render_export_page
-        render_export_page(all_narratives)
-    except Exception as e:
-        st.error(f"❌ Error loading export page: {e}")
-        st.code(str(e))
-        import traceback
-        st.code(traceback.format_exc())
+    from ui.modules.exports_page import render_export_page
+    render_export_page(all_narratives)
 
 with tab7:
-    try:
-        from ui.pages.analytics import render_analytics_page
-        render_analytics_page(all_narratives)
-    except Exception as e:
-        st.error(f"❌ Error loading analytics page: {e}")
-        st.code(str(e))
-        import traceback
-        st.code(traceback.format_exc())
+    from ui.modules.analytics_page import render_analytics_page
+    render_analytics_page(all_narratives)
+
+with tab8:
+    from ui.modules.backup_page import render_backup_page
+    render_backup_page()
+
 
 st.markdown("---")
 st.markdown("""
 <div style='text-align: center; color: #666; padding: 20px;'>
     <p>🧠 <strong>SatyaAI</strong> - Digital Trust Memory System</p>
-    <p>Built with Qdrant, Streamlit, and Sentence Transformers</p>
+    <p>Built with Qdrant</p>
     <p style='font-size: 0.8em;'>For decision-support purposes only. Does not declare truth or falsehood.</p>
 </div>
 """, unsafe_allow_html=True)
