@@ -1,4 +1,6 @@
 from core.memory.text_search import search_claims
+from core.narratives.narrative_intelligence import compute_narrative_stats
+from core.reports.evidence_engine import compute_evidence_strength
 
 
 def generate_trust_report(query):
@@ -15,36 +17,59 @@ def generate_trust_report(query):
 
     timeline = []
     sources = set()
-    years = []
+    memories = []
 
     for r in results:
         data = r.payload
-        years.append(int(data.get("year", 0)) if data.get("year") else 0)
 
-        timeline.append({
+        memory = {
             "year": data.get("year"),
             "source": data.get("source"),
             "claim": data.get("claim"),
+            "type": data.get("type", "text"),
             "score": round(r.score, 3)
-        })
+        }
+
+        memories.append(memory)
+        timeline.append(memory)
 
         if data.get("source"):
             sources.add(data.get("source"))
 
-    timeline = sorted(timeline, key=lambda x: (x["year"] or 0))
+    timeline = sorted(
+        timeline,
+        key=lambda x: int(x["year"]) if x["year"] and str(x["year"]).isdigit() else 0
+    )
 
-    first_seen = min([y for y in years if y != 0], default="Unknown")
-    last_seen = max(years) if years else "Unknown"
+    stats = compute_narrative_stats(memories)
+
+    evidence = compute_evidence_strength(stats)
 
     report = {
         "status": "history_found",
         "narrative_id": narrative_id,
-        "occurrence_count": len(timeline),
-        "first_seen": first_seen,
-        "last_seen": last_seen,
+        "occurrence_count": len(memories),
         "sources_seen": list(sources),
         "timeline": timeline,
-        "insight": f"This narrative first appeared in {first_seen} and resurfaced {len(timeline)} times across platforms."
+        "insight": f"This narrative first appeared in {stats['first_seen']} and has resurfaced {len(memories)} times over time."
     }
+
+    report.update({
+        "first_seen": stats["first_seen"],
+        "last_seen": stats["last_seen"],
+        "lifespan": stats["lifespan"],
+        "modalities": stats["modalities"],
+        "strength": stats["strength"],
+        "threat_level": stats["threat_level"],
+        "resurfacing": stats["resurfacing"],
+        "narrative_state": stats["state"],
+        "memory_strength": stats["memory_strength"],
+        "temporal_patterns": stats["temporal_patterns"]
+    })
+
+
+    report.update({
+        "evidence_strength": evidence
+    })
 
     return report

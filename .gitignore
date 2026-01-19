@@ -5,3 +5,6 @@ __pycache__/
 *.pyd
 qdrant_data/
 data/uploads/
+exports/*.json
+exports/*.csv
+exports/*.pdf

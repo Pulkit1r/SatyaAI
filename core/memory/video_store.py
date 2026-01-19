@@ -3,7 +3,6 @@ from core.memory.image_store import store_image
 
 
 def store_video(video_path, metadata):
-
     frames = extract_frames(video_path)
 
     for f in frames:
@@ -13,4 +12,4 @@ def store_video(video_path, metadata):
             **metadata
         })
 
-    print("✅ Video stored as visual memory")
+    print("✅ Video stored as multimodal visual memory")

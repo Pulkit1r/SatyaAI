@@ -3,7 +3,8 @@ from core.qdrant.client import client
 
 
 def setup_collections():
-
+    """Setup Qdrant collections with proper error handling"""
+    
     collections = {
         "text_memory": 384,     # MiniLM
         "image_memory": 512,    # CLIP
@@ -11,17 +12,23 @@ def setup_collections():
     }
 
     for name, size in collections.items():
-        if not client.collection_exists(name):
-            client.create_collection(
-                collection_name=name,
-                vectors_config=VectorParams(
-                    size=size,
-                    distance=Distance.COSINE
+        try:
+            # Try to get collection info
+            client.get_collection(name)
+            print(f"✓ Collection already exists: {name}")
+        except Exception:
+            # Collection doesn't exist, create it
+            try:
+                client.create_collection(
+                    collection_name=name,
+                    vectors_config=VectorParams(
+                        size=size,
+                        distance=Distance.COSINE
+                    )
                 )
-            )
-            print(f"✅ Created collection: {name}")
-        else:
-            print(f"✔ Collection already exists: {name}")
+                print(f"✅ Created collection: {name}")
+            except Exception as e:
+                print(f"❌ Error creating {name}: {e}")
 
 
 if __name__ == "__main__":
