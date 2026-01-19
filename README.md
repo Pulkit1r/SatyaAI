@@ -500,7 +500,7 @@ The SatyaAI dashboard provides **7 main tabs:**
 
 **1. Clone repository**
 ```bash
-git clone <repo-link>
+git clone https://github.com/Pulkit1r/SatyaAI.git
 cd SatyaAI
 ```
 
@@ -642,7 +642,6 @@ See `TESTING.md` for detailed testing documentation.
 ### System Requirements
 
 - **OS:** Windows 10+, Linux, macOS
-- **RAM:** 4GB minimum, 8GB recommended
 - **Storage:** 2GB for Qdrant + data
 - **Network:** Required for initial model downloads
 
@@ -739,16 +738,6 @@ We welcome contributions! Areas of interest:
 
 ---
 
-## 📄 License
-
-This project is developed for research and educational purposes.
-
-**Usage restrictions:**
-- Not for commercial misinformation tracking without disclosure
-- Must maintain ethical guidelines
-- Attribute original work
-
----
 
 ## 🙏 Acknowledgments
 
@@ -767,18 +756,8 @@ This project is developed for research and educational purposes.
 
 ## 📧 Contact & Support
 
-**For questions, issues, or collaboration:**
+**For issues:**
 - Open an issue on GitHub
-- Check existing documentation
-- Review TESTING.md for test guidance
-
-**Reporting bugs:**
-1. Check if issue already exists
-2. Run `python diagnostic_check.py`
-3. Include error logs and system info
-4. Describe steps to reproduce
-
----
 
 ## 🔮 Future Roadmap
 
