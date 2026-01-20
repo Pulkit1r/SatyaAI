@@ -1,10 +1,15 @@
 # Core Vector DB & Embeddings
-qdrant-client==1.7.0,<2.0.0
+qdrant-client==1.7.0
 sentence-transformers==2.2.2
 
-# PyTorch (platform-specific wheels resolved automatically)
-torch>=2.1.0
-torchvision>=0.16.0
+# HuggingFace stack 
+transformers==4.30.2
+huggingface-hub==0.16.4
+safetensors==0.7.0
+
+# PyTorch (CPU; platform wheels auto-resolved)
+torch==2.9.1
+torchvision==0.24.1
 
 # Image & Video
 pillow==10.1.0
