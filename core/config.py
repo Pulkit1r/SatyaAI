@@ -82,3 +82,6 @@ RESURFACING_MIN_GAP = 1      # Minimum gap (years) to count as resurfacing
 # Logging
 LOG_LEVEL = "INFO"
 LOG_FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+
+EXPORT_DIR = Path("exports")
+EXPORT_DIR.mkdir(exist_ok=True)
