@@ -133,17 +133,10 @@ python -m venv venv
 
 # Activate virtual environment
 source venv/bin/activate          # Linux/macOS
-venv\Scripts\activate             # Windows Command Prompt
-venv\Scripts\Activate.ps1         # Windows PowerShell
+venv\Scripts\activate             # Windows PowerShell
 
 # Install dependencies
 pip install -r requirements.txt
-
-# Initialize database
-python -m core.qdrant.schema
-
-# Load demo data (optional)
-python quick_setup.py
 
 # Run the application
 streamlit run ui/app.py
