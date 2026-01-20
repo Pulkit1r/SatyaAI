@@ -8,10 +8,16 @@ from pathlib import Path
 BASE_DIR = Path(__file__).parent.parent
 DATA_DIR = BASE_DIR / "data"
 UPLOAD_DIR = DATA_DIR / "uploads"
+EXPORT_DIR = BASE_DIR / "exports"
+BACKUP_DIR = BASE_DIR / "backups"
+QDRANT_DIR = BASE_DIR / "qdrant_data"
 
 # Ensure directories exist
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+EXPORT_DIR.mkdir(parents=True, exist_ok=True)
+BACKUP_DIR.mkdir(parents=True, exist_ok=True)
+QDRANT_DIR.mkdir(parents=True, exist_ok=True)
 
 # Application settings
 APP_TITLE = "SatyaAI – Digital Trust Memory System"
@@ -44,6 +50,10 @@ QDRANT_PATH = "qdrant_data"
 TEXT_COLLECTION = "text_memory"
 IMAGE_COLLECTION = "image_memory"
 VIDEO_COLLECTION = "video_memory"
+
+# Backup settings
+MAX_BACKUPS = 10              # Keep last N backups
+AUTO_BACKUP_ENABLED = False   # Enable auto-backup
 
 # Video processing
 DEFAULT_FRAME_EXTRACTION_RATE = 60  # Extract 1 frame every N frames

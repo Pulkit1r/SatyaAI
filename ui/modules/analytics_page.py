@@ -22,14 +22,6 @@ try:
 except ImportError as e:
     IMPORT_ERROR = str(e)
 
-# Try importing notifications
-try:
-    from core.notifications.notifier import send_alert
-    NOTIFICATIONS_ENABLED = True
-except ImportError:
-    NOTIFICATIONS_ENABLED = False
-
-
 def render_analytics_page(narratives):
     """Render the analytics dashboard"""
     
@@ -251,20 +243,6 @@ def render_analytics_page(narratives):
         if viral and len(viral) > 0:
             st.success(f"🚨 **{len(viral)} viral narratives detected!**")
             
-            # Send notifications for high-risk viral narratives
-            if NOTIFICATIONS_ENABLED:
-                for v in viral[:3]:
-                    if v['risk_score'] > 70:
-                        try:
-                            send_alert(
-                                v['narrative_id'],
-                                "HIGH",
-                                f"Viral narrative detected with risk score {v['risk_score']}",
-                                {"velocity": v['velocity'], "platforms": v['platforms']}
-                            )
-                        except:
-                            pass
-            
             # Show as table
             st.markdown("### Top Viral Narratives")
             for idx, v in enumerate(viral[:5], 1):
@@ -342,19 +320,6 @@ def render_analytics_page(narratives):
         if campaigns and len(campaigns) > 0:
             st.warning(f"⚠️ **{len(campaigns)} potential campaigns detected!**")
             
-            # Send notifications for campaigns
-            if NOTIFICATIONS_ENABLED:
-                for c in campaigns[:2]:
-                    if c.get('coordination_score', 0) > 50:
-                        try:
-                            send_alert(
-                                "CAMPAIGN",
-                                "MEDIUM",
-                                f"Coordinated campaign detected: {c.get('narrative_count')} narratives on {c.get('platform')}",
-                                c
-                            )
-                        except:
-                            pass
             
             for idx, c in enumerate(campaigns[:5], 1):
                 coord_score = c.get('coordination_score', 0)

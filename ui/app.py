@@ -123,13 +123,6 @@ Built using **Qdrant** vector memory.
 
 st.sidebar.markdown("---")
 
-# Notification badge
-try:
-    from ui.modules.notifications_page import show_notification_badge
-    show_notification_badge()
-except:
-    pass
-
 st.sidebar.markdown("---")
 
 # Why SatyaAI
@@ -220,8 +213,8 @@ tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8 = st.tabs([
 with tab1:
     st.subheader("➕ Add new data into memory")
     claim = st.text_area("Enter claim or news text", height=100)
-    year = st.text_input("Year (e.g. 2024)", value="2024")
-    source = st.text_input("Source (twitter, news, whatsapp, etc.)", value="twitter")
+    year = st.text_input("Year (e.g. 2024)", value="")
+    source = st.text_input("Source (twitter, news, whatsapp, etc.)", value="")
     
     if st.button("Store Text Claim", type="primary"):
         try:

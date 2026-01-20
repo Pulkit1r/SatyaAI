@@ -184,11 +184,6 @@ def delete_backup(backup_path: Path) -> bool:
 
 def get_dir_size(path: Path) -> float:
     """
-    Calculate directory size in MB.
-    
-    Args:
-        path: Directory path
-        
     Returns:
         float: Size in MB
     """
@@ -196,10 +191,15 @@ def get_dir_size(path: Path) -> float:
     try:
         for file in path.rglob('*'):
             if file.is_file():
-                total_size += file.stat().st_size
+                try:
+                    total_size += file.stat().st_size
+                except (OSError, PermissionError):
+                    continue
     except Exception as e:
         logger.warning(f"Error calculating directory size: {e}")
-    return round(total_size / (1024 * 1024), 2)
+    
+    size_mb = total_size / (1024 * 1024)
+    return round(size_mb, 2)
 
 
 def auto_backup(max_backups: int = 10) -> Path:
