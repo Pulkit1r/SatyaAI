@@ -1,20 +1,18 @@
-# Core Vector DB & Embeddings
-qdrant-client==1.7.0,<2.0.0
-sentence-transformers==2.2.2
+qdrant-client>=1.7.0,<2.0.0
+sentence-transformers>=2.2.2
 
-# PyTorch (platform-specific wheels resolved automatically)
-torch>=2.1.0
-torchvision>=0.16.0
+# Torch (CPU compatible)
+torch>=2.0.0
+torchvision>=0.15.0
 
-# Image & Video
-pillow==10.1.0
-opencv-python==4.8.1.78
+numpy>=1.23
+pillow>=9.5.0
+opencv-python-headless>=4.8.0
 
-# Web & API
-streamlit==1.28.0
-fastapi==0.104.1
-uvicorn[standard]==0.24.0
-python-multipart==0.0.6
+streamlit>=1.28.0
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+python-multipart>=0.0.6
 
 # Data & Visualization
 numpy==1.24.3
