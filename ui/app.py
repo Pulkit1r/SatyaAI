@@ -5,18 +5,10 @@ import streamlit as st
 
 # ⚠️ CRITICAL: set_page_config MUST BE FIRST
 st.set_page_config(
-    page_title="SatyaAI — Digital Trust Memory System", 
+    page_title="SatyaAI – Digital Trust Memory System", 
     page_icon="🧠",
     layout="centered"
 )
-
-# Initialize theme
-if 'theme' not in st.session_state:
-    st.session_state.theme = 'dark'
-
-# Apply theme
-from ui.modules.theme_manager import apply_theme, render_theme_selector
-apply_theme(st.session_state.theme)
 
 import json
 import matplotlib.pyplot as plt
@@ -42,7 +34,7 @@ except ImportError:
     from pathlib import Path
     UPLOAD_DIR = Path("data/uploads")
     UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
-    APP_TITLE = "SatyaAI — Digital Trust Memory System"
+    APP_TITLE = "SatyaAI – Digital Trust Memory System"
     APP_ICON = "🧠"
 
 # Auto-load demo data if system is empty
@@ -75,6 +67,7 @@ if 'demo_data_loaded' not in st.session_state:
     except:
         st.session_state.demo_data_loaded = True
 
+# Apply consistent dark theme styling
 st.markdown("""
 <style>
     body {
@@ -96,6 +89,73 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+# SIDEBAR - Reorganized layout
+st.sidebar.title(f"{APP_ICON} SatyaAI")
+st.sidebar.markdown("**Digital Trust Memory System**")
+
+# System Status at top
+st.sidebar.markdown("### ⚙️ System Status")
+try:
+    all_narratives_check = get_all_narratives(limit=1)
+    st.sidebar.success("✅ Qdrant Memory: Online")
+    st.sidebar.success("✅ Embedding Models: Loaded")
+    st.sidebar.info("🔄 Multimodal Engine: Active")
+except Exception as e:
+    st.sidebar.error("❌ System Error")
+    st.sidebar.error(f"Details: {str(e)}")
+
+st.sidebar.markdown("---")
+
+# About SatyaAI
+st.sidebar.markdown("### 🎯 About SatyaAI")
+st.sidebar.markdown("""
+SatyaAI is not a fact-checker.  
+It is a **long-term misinformation memory engine**.
+
+**Key Capabilities:**
+- 🧠 Remembers misinformation
+- 🔄 Tracks recurring narratives
+- 📜 Reconstructs claim history
+- 🔍 Detects resurfacing patterns
+
+Built using **Qdrant** vector memory.
+""")
+
+st.sidebar.markdown("---")
+
+# Notification badge
+try:
+    from ui.modules.notifications_page import show_notification_badge
+    show_notification_badge()
+except:
+    pass
+
+st.sidebar.markdown("---")
+
+# Why SatyaAI
+st.sidebar.markdown("### 💡 Why SatyaAI?")
+st.sidebar.info("""
+Misinformation doesn't disappear.  
+**It comes back.**
+
+SatyaAI remembers:  
+• What was said  
+• What was shown  
+• How narratives evolve
+""")
+
+st.sidebar.markdown("---")
+
+# Ethics note at bottom
+st.sidebar.warning("""
+⚖️ **Ethics Note**  
+SatyaAI does not declare truth.  
+It provides memory, history,  
+and patterns to support  
+human decision-making.
+""")
+
+# MAIN CONTENT
 mode = st.selectbox("Select Use Case Mode", [
     "Journalist",
     "Government Analyst",
@@ -113,64 +173,6 @@ elif mode == "Social Media Monitor":
 elif mode == "Researcher":
     st.info("Mode: Studying long-term evolution of misinformation.")
 
-# Theme selector at top of sidebar
-current_theme = render_theme_selector()
-
-st.sidebar.title(f"{APP_ICON} SatyaAI")
-st.sidebar.markdown("""
-**Digital Trust Memory System**
-
-SatyaAI is not a fact-checker.  
-It is a long-term misinformation memory engine.
-
-It:
-- Remembers misinformation
-- Tracks recurring narratives
-- Reconstructs claim history
-- Detects resurfacing patterns
-
-Built using Qdrant vector memory.
-""")
-
-st.sidebar.markdown("---")
-st.sidebar.markdown("### 🎯 Why SatyaAI?")
-st.sidebar.info("""
-Misinformation doesn't disappear.  
-It comes back.
-
-SatyaAI was built to remember:  
-what was said,  
-what was shown,  
-and how narratives evolve.
-""")
-
-st.sidebar.markdown("---")
-st.sidebar.markdown("### ⚙ System Status")
-try:
-    all_narratives_check = get_all_narratives(limit=1)
-    st.sidebar.success("✅ Qdrant Memory: Online")
-    st.sidebar.success("✅ Embedding Models: Loaded")
-    st.sidebar.info("🔄 Multimodal Engine: Active")
-except Exception as e:
-    st.sidebar.error("❌ System Error")
-    st.sidebar.error(f"Details: {str(e)}")
-
-# Notification badge
-try:
-    from ui.modules.notifications_page import show_notification_badge
-    show_notification_badge()
-except:
-    pass
-
-st.sidebar.markdown("---")
-st.sidebar.warning("""
-⚖️ **Ethics Note:**  
-SatyaAI does not declare truth.  
-It provides memory, history,  
-and patterns to support  
-human decision-making.
-""")
-
 try:
     all_narratives = get_all_narratives()
     total_narratives = len(all_narratives)
@@ -181,7 +183,7 @@ except Exception as e:
     total_narratives = 0
     total_memories = 0
 
-st.title(f"{APP_ICON} SatyaAI — Digital Trust Memory System")
+st.title(f"{APP_ICON} SatyaAI – Digital Trust Memory System")
 st.write("An AI system that remembers misinformation narratives over time.")
 
 c1, c2 = st.columns(2)
@@ -304,7 +306,7 @@ with tab2:
                     st.markdown(f"## 🧠 Narrative ID: `{report['narrative_id']}`")
                     
                     col1, col2, col3 = st.columns(3)
-                    col1.metric("🔍 Occurrences", report["occurrence_count"])
+                    col1.metric("🔢 Occurrences", report["occurrence_count"])
                     col2.metric("⚠️ Risk Level", risk["risk_level"])
                     col3.metric("📊 Risk Score", risk["risk_score"])
                     
@@ -357,7 +359,7 @@ with tab2:
                         plt.close()
                     
                     st.markdown("---")
-                    st.markdown("### 🕒 Narrative Timeline")
+                    st.markdown("### 🕐 Narrative Timeline")
                     for idx, t in enumerate(report["timeline"], 1):
                         claim_text = t.get('claim', '[Visual content]')
                         st.write(f"**{idx}.** {t['year']} | 📱 {t['source']} | {claim_text[:100]}... | *Score: {t['score']:.3f}*")
@@ -495,11 +497,11 @@ with tab5:
                 with st.expander(f"🧠 {n['id']} | {n['count']} memories | {first_display} → {last_display} | Lifespan: {n['lifespan']} years"):
                     for i in sorted(n["items"], key=lambda x: str(x.get("year", ""))):
                         if i.get("type") in ["image", "video_frame"]:
-                            st.write(f"🕒 {i.get('year')} | 📱 {i.get('source')} | 🖼 [Visual evidence]")
+                            st.write(f"🕐 {i.get('year')} | 📱 {i.get('source')} | 🖼 [Visual evidence]")
                             if os.path.exists(i.get("path", "")):
                                 st.image(i.get("path"), width=250)
                         else:
-                            st.write(f"🕒 {i.get('year')} | 📱 {i.get('source')} | 💬 {i.get('claim', 'N/A')[:100]}")
+                            st.write(f"🕐 {i.get('year')} | 📱 {i.get('source')} | 💬 {i.get('claim', 'N/A')[:100]}")
     except Exception as e:
         st.error(f"❌ Error loading narratives: {str(e)}")
 
