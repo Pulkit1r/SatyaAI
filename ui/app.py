@@ -2,6 +2,10 @@ import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 import streamlit as st
+from core.analysis.trust_score import calculate_trust_score
+import pandas as pd
+from core.analysis.trust_score import calculate_trust_score
+
 
 # ⚠️ CRITICAL: set_page_config MUST BE FIRST
 st.set_page_config(
@@ -123,13 +127,6 @@ Built using **Qdrant** vector memory.
 
 st.sidebar.markdown("---")
 
-# Notification badge
-try:
-    from ui.modules.notifications_page import show_notification_badge
-    show_notification_badge()
-except:
-    pass
-
 st.sidebar.markdown("---")
 
 # Why SatyaAI
@@ -156,22 +153,49 @@ human decision-making.
 """)
 
 # MAIN CONTENT
-mode = st.selectbox("Select Use Case Mode", [
+
+# Persist selected mode across reruns
+if "mode" not in st.session_state:
+    st.session_state.mode = "— Select a mode —"
+
+mode_options = [
+    "— Select a mode —",
     "Journalist",
     "Government Analyst",
     "Social Media Monitor",
     "Researcher"
-])
+]
+
+mode = st.selectbox(
+    "Select Use Case Mode",
+    mode_options,
+    index=mode_options.index(st.session_state.mode)
+)
+
+# Save selection
+st.session_state.mode = mode
+
+
 
 st.markdown("### 🎯 Active Mode")
-if mode == "Journalist":
-    st.info("Mode: Investigating viral claims and tracing narrative origins.")
-elif mode == "Government Analyst":
-    st.info("Mode: Monitoring misinformation campaigns and public risk.")
-elif mode == "Social Media Monitor":
-    st.info("Mode: Tracking resurfacing narratives across platforms.")
-elif mode == "Researcher":
-    st.info("Mode: Studying long-term evolution of misinformation.")
+
+if st.session_state.mode == "— Select a mode —":
+    st.info("Please select a use case mode to begin.")
+elif st.session_state.mode == "Journalist":
+    st.success("Mode: Investigating viral claims and tracing narrative origins.")
+elif st.session_state.mode == "Government Analyst":
+    st.success("Mode: Monitoring misinformation campaigns and public risk.")
+elif st.session_state.mode == "Social Media Monitor":
+    st.success("Mode: Tracking resurfacing narratives across platforms.")
+elif st.session_state.mode == "Researcher":
+    st.success("Mode: Studying long-term evolution of misinformation.")
+
+
+if st.session_state.mode == "— Select a mode —":
+    st.warning("⚠️ Select a mode to unlock analysis features.")
+    st.stop()
+
+
 
 try:
     all_narratives = get_all_narratives()
@@ -281,6 +305,7 @@ with tab1:
             st.error(f"❌ Error processing video: {str(e)}")
 
 with tab2:
+    report = None
     st.subheader("🔍 Analyze a claim using system memory")
     demo = st.selectbox("Quick demo examples:", [
         "",
@@ -298,17 +323,59 @@ with tab2:
             try:
                 with st.spinner("Analyzing narrative memory..."):
                     report = generate_trust_report(query)
+
+                    # 📊 Claim Resurfacing Line Chart
+                    import pandas as pd
+
+                    timeline_data = report.get("timeline", [])
+
+                    years = [
+                        int(t["year"])
+                        for t in timeline_data
+                        if t.get("year") and str(t.get("year")).isdigit()
+                    ]
+
+                    if years:
+                        df = pd.DataFrame(years, columns=["year"])
+                        df = df.groupby("year").size().reset_index(name="occurrences")
+                        df = df.sort_values("year")
+
+                        st.markdown("### 📊 Claim Resurfacing Timeline")
+                        st.line_chart(df.set_index("year"))
+                    else:
+                        st.info("ℹ️ Not enough temporal data to generate timeline.")
+
+                    
+
                 
                 if report["status"] == "no_history":
                     st.info("ℹ️ No similar history found in the system.")
                 else:
                     risk = calculate_risk(report)
+
+                    # 🔐 Trust Score Calculation (NEW)
+                    timeline_scores = [t["score"] for t in report.get("timeline", []) if "score" in t]
+                    top_similarity = max(timeline_scores) if timeline_scores else 0.0
+
+                    trust_score_data = calculate_trust_score(
+                        similarity=top_similarity,
+                        occurrences=report["occurrence_count"],
+                        source_count=len(report.get("sources_seen", []))
+                    )
+
                     st.markdown(f"## 🧠 Narrative ID: `{report['narrative_id']}`")
-                    
-                    col1, col2, col3 = st.columns(3)
+
+                    col1, col2, col3, col4 = st.columns(4)
                     col1.metric("🔢 Occurrences", report["occurrence_count"])
                     col2.metric("⚠️ Risk Level", risk["risk_level"])
                     col3.metric("📊 Risk Score", risk["risk_score"])
+                    col4.metric(
+                        "🧠 Trust Score",
+                        f"{trust_score_data['trust_score']} / 100",
+                        trust_score_data["risk_level"]
+                    )
+                    
+
                     
                     if report["occurrence_count"] >= 3:
                         st.error("🚨 **ALERT:** Resurfacing Narrative Detected")
@@ -357,7 +424,28 @@ with tab2:
                         ax.grid(axis='y', alpha=0.3)
                         st.pyplot(fig)
                         plt.close()
-                    
+
+                        # 📊 Claim Resurfacing Line Chart (Hackathon Polish)
+                        import pandas as pd
+
+                        timeline_data = report.get("timeline", [])
+
+                        years = [
+                            int(t["year"])
+                            for t in timeline_data
+                            if t.get("year") and str(t.get("year")).isdigit()
+                        ]
+
+                        if years:
+                            df = pd.DataFrame(years, columns=["year"])
+                            df = df.groupby("year").size().reset_index(name="occurrences")
+                            df = df.sort_values("year")
+
+                            st.markdown("### 📊 Claim Resurfacing Timeline")
+                            st.line_chart(df.set_index("year"))
+                        else:
+                            st.info("ℹ️ Not enough temporal data to generate timeline.")
+
                     st.markdown("---")
                     st.markdown("### 🕐 Narrative Timeline")
                     for idx, t in enumerate(report["timeline"], 1):
@@ -381,6 +469,24 @@ with tab2:
             
             except Exception as e:
                 st.error(f"❌ Error generating report: {str(e)}")
+
+                st.markdown("### 🕐 Claim Resurfacing Timeline")
+
+# 🕐 Claim Resurfacing Timeline (SAFE)
+st.markdown("### 🕐 Claim Resurfacing Timeline")
+
+if report and report.get("resurfacing_timeline"):
+    resurfacing = report["resurfacing_timeline"]
+
+    for date, platforms in sorted(resurfacing.items()):
+        st.write(
+            f"📅 **{date}** — {len(platforms)} occurrence(s) "
+            f"on {', '.join(set(platforms))}"
+        )
+else:
+    st.info("Generate a trust report to see the resurfacing timeline.")
+
+
 
 with tab3:
     st.subheader("🖼 Analyze an Image")

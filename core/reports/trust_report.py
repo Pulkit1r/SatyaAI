@@ -1,6 +1,7 @@
 from core.memory.text_search import search_claims
 from core.narratives.narrative_intelligence import compute_narrative_stats
 from core.reports.evidence_engine import compute_evidence_strength
+from core.analysis.timeline import build_timeline   # ✅ NEW
 
 
 def generate_trust_report(query):
@@ -15,7 +16,7 @@ def generate_trust_report(query):
 
     narrative_id = results[0].payload.get("narrative_id", "Unknown")
 
-    timeline = []
+    timeline = []              # year-based (existing)
     sources = set()
     memories = []
 
@@ -36,13 +37,16 @@ def generate_trust_report(query):
         if data.get("source"):
             sources.add(data.get("source"))
 
+    # 🔁 Existing year-based timeline (DO NOT REMOVE)
     timeline = sorted(
         timeline,
         key=lambda x: int(x["year"]) if x["year"] and str(x["year"]).isdigit() else 0
     )
 
-    stats = compute_narrative_stats(memories)
+    # 🕐 NEW: True resurfacing timeline (date + platform)
+    resurfacing_timeline = build_timeline(results)
 
+    stats = compute_narrative_stats(memories)
     evidence = compute_evidence_strength(stats)
 
     report = {
@@ -50,8 +54,12 @@ def generate_trust_report(query):
         "narrative_id": narrative_id,
         "occurrence_count": len(memories),
         "sources_seen": list(sources),
-        "timeline": timeline,
-        "insight": f"This narrative first appeared in {stats['first_seen']} and has resurfaced {len(memories)} times over time."
+        "timeline": timeline,                      # existing (UI depends on this)
+        "resurfacing_timeline": resurfacing_timeline,  # ✅ NEW
+        "insight": (
+            f"This narrative first appeared in {stats['first_seen']} "
+            f"and has resurfaced {len(memories)} times over time."
+        )
     }
 
     report.update({
@@ -66,7 +74,6 @@ def generate_trust_report(query):
         "memory_strength": stats["memory_strength"],
         "temporal_patterns": stats["temporal_patterns"]
     })
-
 
     report.update({
         "evidence_strength": evidence
