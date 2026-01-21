@@ -27,6 +27,29 @@ from core.utils.validators import (
     ValidationError
 )
 
+def clean_platform_name(platform):
+    """Convert internal platform codes to user-friendly names"""
+    platform_map = {
+        'analysis_query': 'Search Query',
+        'user_upload': 'Direct Upload',
+        'upload': 'Direct Upload',
+        'unknown': 'Platform Not Specified',
+        'whatsapp': 'WhatsApp',
+        'facebook': 'Facebook',
+        'twitter': 'Twitter/X',
+        'telegram': 'Telegram',
+        'instagram': 'Instagram',
+        'youtube': 'YouTube',
+        'news': 'News Media',
+        'tiktok': 'TikTok'
+    }
+    
+    if not platform or platform.strip() == '':
+        return 'Platform Not Specified'
+    
+    platform_lower = str(platform).lower().strip()
+    return platform_map.get(platform_lower, platform.title())
+
 try:
     from core.config import UPLOAD_DIR, APP_TITLE, APP_ICON
     UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
@@ -89,64 +112,243 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# SIDEBAR - Reorganized layout
-st.sidebar.title(f"{APP_ICON} SatyaAI")
-st.sidebar.markdown("**Digital Trust Memory System**")
+# Add this right after st.set_page_config() and before the imports
 
-# System Status at top
+# Force sidebar to be expanded on first load
+if 'sidebar_state' not in st.session_state:
+    st.session_state.sidebar_state = 'expanded'
+
+# Update the set_page_config to include initial_sidebar_state
+st.set_page_config(
+    page_title="SatyaAI – Digital Trust Memory System", 
+    page_icon="🧠",
+    layout="centered",
+    initial_sidebar_state="expanded"  # Add this line
+)
+
+# Enhanced dark theme styling with improved sidebar
+st.markdown("""
+<style>
+    /* Main background */
+    body {
+        background-color: #0e1117;
+        color: white;
+    }
+    
+    .block-container {
+        padding-top: 1rem;
+    }
+    
+    /* Headers */
+    h1, h2, h3 {
+        color: #4fd1c5;
+        font-weight: 600;
+    }
+    
+    /* Metrics */
+    .stMetric {
+        background: linear-gradient(135deg, #1a1f2e 0%, #111827 100%);
+        padding: 16px;
+        border-radius: 12px;
+        box-shadow: 0px 4px 15px rgba(79,209,197,0.15);
+        border: 1px solid rgba(79,209,197,0.2);
+    }
+    
+    /* Make sidebar collapse button always visible */
+    [data-testid="collapsedControl"] {
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+    
+    /* Ensure close button is always visible on hover and non-hover */
+    [data-testid="stSidebar"] button[kind="header"] {
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+    
+    /* Make the X button always visible */
+    section[data-testid="stSidebar"] > div > div > div > button {
+        opacity: 1 !important;
+        visibility: visible !important;
+        background: rgba(79,209,197,0.2) !important;
+        border-radius: 4px !important;
+    }
+    
+    /* Sidebar styling */
+    [data-testid="stSidebar"] {
+        background: linear-gradient(180deg, #1a1f2e 0%, #0e1117 100%);
+        border-right: 2px solid rgba(79,209,197,0.3);
+    }
+    
+    [data-testid="stSidebar"] > div:first-child {
+        background: linear-gradient(180deg, #1a1f2e 0%, #0e1117 100%);
+    }
+    
+    /* Sidebar headers */
+    [data-testid="stSidebar"] h1,
+    [data-testid="stSidebar"] h2,
+    [data-testid="stSidebar"] h3 {
+        color: #4fd1c5 !important;
+        font-weight: 700;
+        text-shadow: 0 0 10px rgba(79,209,197,0.3);
+    }
+    
+    /* Sidebar markdown text */
+    [data-testid="stSidebar"] .element-container {
+        color: #e0e0e0;
+    }
+    
+    [data-testid="stSidebar"] p {
+        color: #b8b8b8;
+        line-height: 1.6;
+    }
+    
+    /* Sidebar dividers */
+    [data-testid="stSidebar"] hr {
+        border-color: rgba(79,209,197,0.2);
+        margin: 1.5rem 0;
+    }
+    
+    /* Sidebar info/success/warning boxes */
+    [data-testid="stSidebar"] .stAlert {
+        background: rgba(79,209,197,0.1);
+        border-left: 4px solid #4fd1c5;
+        border-radius: 8px;
+        padding: 12px;
+        margin: 10px 0;
+    }
+    
+    [data-testid="stSidebar"] .stSuccess {
+        background: rgba(34,197,94,0.1);
+        border-left: 4px solid #22c55e;
+    }
+    
+    [data-testid="stSidebar"] .stWarning {
+        background: rgba(251,191,36,0.1);
+        border-left: 4px solid #fbbf24;
+    }
+    
+    [data-testid="stSidebar"] .stError {
+        background: rgba(239,68,68,0.1);
+        border-left: 4px solid #ef4444;
+    }
+    
+    /* Sidebar title styling */
+    [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] > p:first-child {
+        font-size: 1.1em;
+        font-weight: 600;
+    }
+    
+    /* Better button styling */
+    .stButton > button {
+        background: linear-gradient(135deg, #4fd1c5 0%, #3b9e91 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 0.5rem 1rem;
+        font-weight: 600;
+        box-shadow: 0 4px 10px rgba(79,209,197,0.3);
+        transition: all 0.3s ease;
+    }
+    
+    .stButton > button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(79,209,197,0.4);
+    }
+    
+    /* Expander styling */
+    .streamlit-expanderHeader {
+        background: rgba(79,209,197,0.1);
+        border-radius: 8px;
+        border-left: 3px solid #4fd1c5;
+    }
+    
+    /* Tab styling */
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 8px;
+    }
+    
+    .stTabs [data-baseweb="tab"] {
+        background: rgba(79,209,197,0.1);
+        border-radius: 8px 8px 0 0;
+        color: #4fd1c5;
+        padding: 10px 20px;
+    }
+    
+    .stTabs [aria-selected="true"] {
+        background: linear-gradient(135deg, #4fd1c5 0%, #3b9e91 100%);
+        color: white;
+    }
+</style>
+""", unsafe_allow_html=True)
+
+
+st.sidebar.markdown("""
+<div style='text-align: center; padding: 15px; background: linear-gradient(135deg, rgba(79,209,197,0.2) 0%, rgba(79,209,197,0.05) 100%); border-radius: 10px; margin-bottom: 15px; border: 2px solid rgba(79,209,197,0.3);'>
+    <h1 style='margin: 0; font-size: 2em; color: #4fd1c5;'>🧠 SatyaAI</h1>
+    <p style='margin: 5px 0 0 0; color: #888; font-size: 0.85em;'>Digital Trust Memory</p>
+</div>
+""", unsafe_allow_html=True)
+
+# System Status - Bigger and more readable
 st.sidebar.markdown("### ⚙️ System Status")
 try:
     all_narratives_check = get_all_narratives(limit=1)
-    st.sidebar.success("✅ Qdrant Memory: Online")
-    st.sidebar.success("✅ Embedding Models: Loaded")
-    st.sidebar.info("🔄 Multimodal Engine: Active")
+    st.sidebar.markdown("""
+<div style='background: rgba(34,197,94,0.1); padding: 12px; border-radius: 8px; border-left: 3px solid #22c55e; margin: 8px 0;'>
+    <p style='margin: 4px 0; color: #22c55e; font-size: 0.9em;'>✅ <strong>Memory:</strong> Online</p>
+    <p style='margin: 4px 0; color: #22c55e; font-size: 0.9em;'>✅ <strong>Models:</strong> Loaded</p>
+    <p style='margin: 4px 0; color: #4fd1c5; font-size: 0.9em;'>🔄 <strong>Engine:</strong> Active</p>
+</div>
+""", unsafe_allow_html=True)
 except Exception as e:
-    st.sidebar.error("❌ System Error")
-    st.sidebar.error(f"Details: {str(e)}")
+    st.sidebar.markdown(f"""
+<div style='background: rgba(239,68,68,0.1); padding: 12px; border-radius: 8px; border-left: 3px solid #ef4444; margin: 8px 0;'>
+    <p style='margin: 4px 0; color: #ef4444; font-size: 0.9em;'>❌ <strong>Error:</strong> {str(e)[:40]}...</p>
+</div>
+""", unsafe_allow_html=True)
 
 st.sidebar.markdown("---")
 
 # About SatyaAI
-st.sidebar.markdown("### 🎯 About SatyaAI")
-st.sidebar.markdown("""
-SatyaAI is not a fact-checker.  
-It is a **long-term misinformation memory engine**.
+st.sidebar.markdown("### 🎯 About")
+st.sidebar.info("""
+**Not a fact-checker.**  
+A **long-term misinformation memory engine**.
 
-**Key Capabilities:**
+**Capabilities:**
 - 🧠 Remembers misinformation
-- 🔄 Tracks recurring narratives
+- 🔄 Tracks recurring narratives  
 - 📜 Reconstructs claim history
 - 🔍 Detects resurfacing patterns
-
-Built using **Qdrant** vector memory.
 """)
-
-st.sidebar.markdown("---")
 
 st.sidebar.markdown("---")
 
 # Why SatyaAI
 st.sidebar.markdown("### 💡 Why SatyaAI?")
-st.sidebar.info("""
-Misinformation doesn't disappear.  
+st.sidebar.warning("""
+**Misinformation doesn't disappear.**  
 **It comes back.**
 
-SatyaAI remembers:  
-• What was said  
-• What was shown  
-• How narratives evolve
+**SatyaAI remembers:**
+- What was said  
+- What was shown  
+- How narratives evolve
 """)
 
 st.sidebar.markdown("---")
 
-# Ethics note at bottom
-st.sidebar.warning("""
+# Ethics note
+st.sidebar.error("""
 ⚖️ **Ethics Note**  
 SatyaAI does not declare truth.  
-It provides memory, history,  
-and patterns to support  
-human decision-making.
+
+It provides **memory, history, and patterns** to support human decision-making.
 """)
+
+st.sidebar.markdown("---")
+st.sidebar.caption("Version 1.0 | © 2026")
 
 # MAIN CONTENT
 mode = st.selectbox("Select Use Case Mode", [
@@ -374,7 +576,6 @@ with tab2:
             
             except Exception as e:
                 st.error(f"❌ Error generating report: {str(e)}")
-
 with tab3:
     st.subheader("🖼 Analyze an Image")
     uploaded = st.file_uploader("Upload an image to analyze", type=["jpg", "jpeg", "png", "jfif", "webp"], key="analyze_image")
@@ -388,21 +589,119 @@ with tab3:
             
             if st.button("Analyze Image Memory", type="primary"):
                 with st.spinner("Searching visual memory..."):
-                    narrative_id = process_new_image(str(path), {"source": "user_upload"})
-                    st.success(f"✅ Image linked to narrative: **{narrative_id}**")
-                    results = search_images(str(path), limit=5)
+                    # First, link to narrative
+                    narrative_id = process_new_image(str(path), {"source": "analysis_query"})
+                    
+                    # Search for similar images
+                    results = search_images(str(path), limit=10)
                     
                     if results:
-                        st.markdown("### 🔍 Similar Past Visuals Found")
-                        st.write(f"Found {len(results)} similar images:")
+                        st.success(f"✅ **MATCH FOUND!** This image is linked to narrative: **{narrative_id}**")
+                        
+                        # Calculate statistics
+                        total_matches = len(results)
+                        platforms = set()
+                        years_seen = []
+                        
+                        for r in results:
+                            p = r.payload
+                            if p.get('source'):
+                                platforms.add(p.get('source'))
+                            if p.get('year'):
+                                try:
+                                    years_seen.append(int(p.get('year')))
+                                except:
+                                    pass
+                        
+                        # Display summary metrics
+                        st.markdown("### 📊 Circulation History")
+                        col1, col2, col3, col4 = st.columns(4)
+                        col1.metric("🔍 Similar Images", total_matches)
+                        
+                        # Count real platforms (excluding internal codes)
+                        real_platforms = [p for p in platforms if p not in ['analysis_query', 'user_upload', 'upload', 'unknown', '']]
+                        col2.metric("📱 Platforms", len(real_platforms) if real_platforms else len(platforms))
+                        
+                        if years_seen:
+                            col3.metric("📅 First Seen", min(years_seen))
+                            col4.metric("📅 Last Seen", max(years_seen))
+                            
+                            lifespan = max(years_seen) - min(years_seen)
+                            if lifespan >= 2:
+                                st.error(f"🚨 **ALERT:** This image has been circulating for {lifespan} years!")
+                            elif lifespan >= 1:
+                                st.warning(f"⚠️ **WARNING:** This image has resurfaced (first seen {min(years_seen)})")
+                        
+                        # Show platform distribution
+                        if platforms:
+                            st.markdown("### 📱 Platform Distribution")
+                            cleaned_platforms = [clean_platform_name(p) for p in platforms]
+                            # Remove generic entries if real platforms exist
+                            real_platforms_cleaned = [p for p in cleaned_platforms if p not in ['Search Query', 'Direct Upload', 'Platform Not Specified']]
+                            if real_platforms_cleaned:
+                                platform_text = ", ".join(sorted(set(real_platforms_cleaned)))
+                            else:
+                                platform_text = ", ".join(sorted(set(cleaned_platforms)))
+                            st.info(f"**Circulated on:** {platform_text}")
+                        
+                        # Timeline visualization
+                        if years_seen and len(years_seen) > 1:
+                            st.markdown("### 📈 Temporal Distribution")
+                            fig, ax = plt.subplots(figsize=(10, 3))
+                            ax.hist(years_seen, bins=range(min(years_seen), max(years_seen)+2), 
+                                   color='#ff6b6b', alpha=0.7, edgecolor='black')
+                            ax.set_title("Image Circulation Over Time", fontsize=12, fontweight='bold')
+                            ax.set_xlabel("Year", fontsize=10)
+                            ax.set_ylabel("Occurrences", fontsize=10)
+                            ax.grid(axis='y', alpha=0.3)
+                            st.pyplot(fig)
+                            plt.close()
+                        
+                        # Detailed matches
+                        st.markdown("### 🔎 Detailed Match History")
+                        st.write(f"Found **{len(results)}** similar instances in our memory:")
+                        
                         for idx, r in enumerate(results, 1):
                             p = r.payload
-                            with st.expander(f"Match {idx}: Similarity {r.score:.3f} | {p.get('source', 'Unknown')} ({p.get('year', 'N/A')})"):
-                                if os.path.exists(p.get("path", "")):
-                                    st.image(p.get("path"), width=300)
-                                st.json(p)
+                            similarity_pct = int(r.score * 100)
+                            
+                            # Get platform from payload, show friendly message if not available
+                            cleaned_platform = clean_platform_name(p.get('source', 'Platform not specified'))
+                            year_display = p.get('year', 'Year unknown')
+                            
+                            # Color code by similarity
+                            if r.score > 0.95:
+                                match_type = "🔴 EXACT MATCH"
+                            elif r.score > 0.85:
+                                match_type = "🟡 VERY SIMILAR"
+                            else:
+                                match_type = "🟢 SIMILAR"
+                            
+                            with st.expander(f"{match_type} #{idx} | {similarity_pct}% similar | {cleaned_platform} ({year_display})"):
+                                col_a, col_b = st.columns([1, 2])
+                                
+                                with col_a:
+                                    if os.path.exists(p.get("path", "")):
+                                        st.image(p.get("path"), width=200, caption="Historical instance")
+                                
+                                with col_b:
+                                    st.write(f"**📅 Year:** {year_display}")
+                                    st.write(f"**📱 Platform:** {cleaned_platform}")
+                                    st.write(f"**🎯 Similarity Score:** {r.score:.4f}")
+                                    st.write(f"**🧬 Narrative ID:** {p.get('narrative_id', 'N/A')}")
+                                    
+                                    # Show associated claim if available
+                                    if p.get('claim'):
+                                        st.write(f"**💬 Associated Claim:** {p.get('claim')[:200]}")
+                                
+                                # Show full metadata
+                                with st.expander("Show full metadata"):
+                                    st.json(p)
                     else:
-                        st.info("No similar images found in memory.")
+                        st.success(f"✅ Image stored under narrative: **{narrative_id}**")
+                        st.info("ℹ️ **NEW IMAGE:** No similar images found in memory. This appears to be the first occurrence.")
+                        st.write("This image has been added to our memory system and will be tracked for future occurrences.")
+                        
         except Exception as e:
             st.error(f"❌ Error: {str(e)}")
 
@@ -419,29 +718,145 @@ with tab4:
             
             if st.button("Analyze Video Memory", type="primary"):
                 with st.spinner("Extracting frames and searching visual memory..."):
+                    # Extract frames
                     frames = extract_frames(str(video_path))
-                    st.info(f"📸 Extracted {len(frames)} frames")
-                    narrative_hits = {}
-                    progress_bar = st.progress(0)
+                    st.info(f"📸 Extracted {len(frames)} frames for analysis")
                     
-                    for idx, frame_path in enumerate(frames[:5]):
-                        results = search_video_frames(frame_path, limit=3)
+                    # Analyze frames
+                    narrative_hits = {}
+                    all_matches = []
+                    platforms_seen = set()
+                    years_seen = []
+                    
+                    progress_bar = st.progress(0)
+                    status_text = st.empty()
+                    
+                    # Analyze first 5 frames (or all if less than 5)
+                    frames_to_analyze = frames[:min(5, len(frames))]
+                    
+                    for idx, frame_path in enumerate(frames_to_analyze):
+                        status_text.text(f"Analyzing frame {idx + 1}/{len(frames_to_analyze)}...")
+                        results = search_video_frames(frame_path, limit=5)
+                        
                         for r in results:
                             nid = r.payload.get("narrative_id")
                             if nid:
                                 narrative_hits[nid] = narrative_hits.get(nid, 0) + 1
-                        progress_bar.progress((idx + 1) / min(5, len(frames)))
+                            
+                            # Collect metadata
+                            if r.payload.get('source'):
+                                platforms_seen.add(r.payload.get('source'))
+                            if r.payload.get('year'):
+                                try:
+                                    years_seen.append(int(r.payload.get('year')))
+                                except:
+                                    pass
+                            
+                            all_matches.append({
+                                'frame_idx': idx + 1,
+                                'result': r,
+                                'payload': r.payload
+                            })
+                        
+                        progress_bar.progress((idx + 1) / len(frames_to_analyze))
+                    
+                    status_text.empty()
                     
                     if narrative_hits:
-                        st.success(f"✅ Found matches in {len(narrative_hits)} narratives!")
+                        st.success(f"✅ **MATCH FOUND!** This video is linked to {len(narrative_hits)} narrative(s)!")
+                        
+                        # Summary metrics
+                        st.markdown("### 📊 Video Circulation History")
+                        col1, col2, col3, col4 = st.columns(4)
+                        col1.metric("🔍 Frame Matches", len(all_matches))
+                        col2.metric("🧬 Narratives", len(narrative_hits))
+                        
+                        # Count real platforms
+                        real_platforms = [p for p in platforms_seen if p not in ['analysis_query', 'user_upload', 'upload', 'unknown', '']]
+                        col3.metric("📱 Platforms", len(real_platforms) if real_platforms else len(platforms_seen))
+                        
+                        if years_seen:
+                            col4.metric("📅 First Seen", min(years_seen))
+                            
+                            lifespan = max(years_seen) - min(years_seen) if len(set(years_seen)) > 1 else 0
+                            if lifespan >= 2:
+                                st.error(f"🚨 **ALERT:** Similar video content has been circulating for {lifespan} years!")
+                            elif lifespan >= 1:
+                                st.warning(f"⚠️ **WARNING:** Similar video content has resurfaced")
+                        
+                        # Platform distribution
+                        if platforms_seen:
+                            st.markdown("### 📱 Platform Distribution")
+                            cleaned_platforms = [clean_platform_name(p) for p in platforms_seen]
+                            real_platforms_cleaned = [p for p in cleaned_platforms if p not in ['Search Query', 'Direct Upload', 'Platform Not Specified']]
+                            if real_platforms_cleaned:
+                                platform_text = ", ".join(sorted(set(real_platforms_cleaned)))
+                            else:
+                                platform_text = ", ".join(sorted(set(cleaned_platforms)))
+                            st.info(f"**Circulated on:** {platform_text}")
+                        
+                        # Timeline
+                        if years_seen and len(years_seen) > 1:
+                            st.markdown("### 📈 Temporal Distribution")
+                            fig, ax = plt.subplots(figsize=(10, 3))
+                            ax.hist(years_seen, bins=range(min(years_seen), max(years_seen)+2), 
+                                   color='#845ef7', alpha=0.7, edgecolor='black')
+                            ax.set_title("Video Content Circulation Over Time", fontsize=12, fontweight='bold')
+                            ax.set_xlabel("Year", fontsize=10)
+                            ax.set_ylabel("Occurrences", fontsize=10)
+                            ax.grid(axis='y', alpha=0.3)
+                            st.pyplot(fig)
+                            plt.close()
+                        
+                        # Narrative breakdown
                         st.markdown("### 🎯 Related Narratives")
                         for nid, count in sorted(narrative_hits.items(), key=lambda x: x[1], reverse=True):
-                            st.write(f"🧠 **{nid}** matched {count} frame(s)")
+                            with st.expander(f"🧠 **{nid}** | {count} frame match(es)"):
+                                # Get narrative details
+                                narrative_matches = [m for m in all_matches if m['payload'].get('narrative_id') == nid]
+                                
+                                # Show statistics for this narrative
+                                st.write(f"**Total frames matched:** {count}")
+                                
+                                # Show each match
+                                for match in narrative_matches[:3]:  # Show top 3
+                                    p = match['payload']
+                                    cleaned_platform = clean_platform_name(p.get('source', 'Platform not specified'))
+                                    year_display = p.get('year', 'Year unknown')
+                                    
+                                    st.markdown(f"**Frame {match['frame_idx']}:**")
+                                    st.write(f"- 📅 Year: {year_display}")
+                                    st.write(f"- 📱 Platform: {cleaned_platform}")
+                                    st.write(f"- 🎯 Similarity: {match['result'].score:.3f}")
+                                    if p.get('claim'):
+                                        st.write(f"- 💬 Context: {p.get('claim')[:150]}...")
+                                    st.markdown("---")
+                        
+                        # Detailed frame analysis
+                        st.markdown("### 🔍 Detailed Frame Analysis")
+                        with st.expander(f"View all {len(all_matches)} matches"):
+                            for match in all_matches:
+                                p = match['payload']
+                                cleaned_platform = clean_platform_name(p.get('source', 'Platform not specified'))
+                                year_display = p.get('year', 'Year unknown')
+                                st.write(f"**Frame {match['frame_idx']} → {year_display} | {cleaned_platform} | Score: {match['result'].score:.3f}**")
+                                if p.get('claim'):
+                                    st.write(f"Context: {p.get('claim')[:200]}")
+                                st.markdown("---")
+                    
                     else:
-                        st.warning("⚠️ No similar past video content found.")
+                        st.info("ℹ️ **NEW VIDEO:** No similar video content found in memory.")
+                        st.write("This video has been processed and stored. Future similar videos will be detected.")
+                        
+                        # Still store the video
+                        with st.spinner("Storing video in memory..."):
+                            store_video(str(video_path), {"source": "analysis_query"})
+                        st.success("✅ Video stored in memory system")
+                        
         except Exception as e:
             st.error(f"❌ Error: {str(e)}")
-
+            
+                        
 with tab5:
     st.subheader("🧬 Narrative Memory Explorer")
     st.write("Explore all long-term misinformation narratives stored in SatyaAI.")

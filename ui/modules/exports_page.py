@@ -40,7 +40,23 @@ def render_export_page(narratives):
     st.title("📤 Export & Reports")
     st.write("Export narrative data in various formats for external analysis and reporting")
     
-    # Always show system status
+    
+    st.markdown("""
+    <style>
+    /* Fix metric text cutting */
+    div[data-testid="stMetricValue"] {
+        font-size: 1.6rem !important;
+        white-space: normal !important;
+        text-overflow: unset !important;
+    }
+    
+    div[data-testid="stMetricLabel"] {
+        white-space: normal !important;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
+    
     st.markdown("---")
     st.subheader("📊 Export System Status")
     
