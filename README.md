@@ -122,7 +122,7 @@ When you add new content:
 
 ---
 
-## Setup
+## Setup for Windows and Linux
 ```bash
 # Clone the repository
 git clone https://github.com/Pulkit1r/SatyaAI.git
@@ -132,7 +132,7 @@ cd SatyaAI
 python -m venv venv
 
 # Activate virtual environment
-source venv/bin/activate          # Linux/macOS
+source venv/bin/activate          # Linux
 venv\Scripts\activate             # Windows PowerShell
 
 # Install dependencies
@@ -144,6 +144,43 @@ streamlit run ui/app.py
 
 Opens at `http://localhost:8501`
 
+## Setup for MAC(M1-M4)
+```bash
+# Clone the repository
+git clone https://github.com/Pulkit1r/SatyaAI.git
+cd SatyaAI
+
+# Install Python 3.10 (required)
+brew install python@3.10
+
+# Create virtual environment using Python 3.10
+/opt/homebrew/bin/python3.10 -m venv venv
+
+# Activate virtual environment
+source venv/bin/activate
+
+# Upgrade build tools
+pip install --upgrade pip setuptools wheel
+
+# Install core ML dependencies (explicitly pinned for stability)
+pip install qdrant-client==1.7.0
+pip install sentence-transformers==2.2.2
+pip install transformers==4.30.2
+pip install huggingface_hub==0.16.4
+
+# Install remaining dependencies
+pip install -r requirements.txt
+
+# (Optional) Run diagnostics
+python diagnostic_check.py
+
+# Run the application
+streamlit run ui/app.py
+```
+
+Opens at `http://localhost:8501`
+
+---
 ---
 
 ## Quick Example
