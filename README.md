@@ -123,35 +123,44 @@ When you add new content:
 ---
 
 ## Setup
+### 1. Clone Repository
 ```bash
-# Clone the repository
 git clone https://github.com/Pulkit1r/SatyaAI.git
 cd SatyaAI
+```
 
-# Create virtual environment
+### 2. Create Virtual Environment
+```bash
 python -m venv venv
+# Windows
+venv\Scripts\activate
+# Linux/Mac
+source venv/bin/activate
+```
 
-# Activate virtual environment
-source venv/bin/activate          # Linux/macOS
-venv\Scripts\activate             # Windows Command Prompt
-venv\Scripts\Activate.ps1         # Windows PowerShell
-
-# Install dependencies
+### 3. Install Dependencies
+```bash
 pip install -r requirements.txt
+```
 
-# Initialize database
+### 4. Configure Qdrant
+SatyaAI uses Qdrant in local mode (no separate installation needed).
+
+Initialize the vector database schema:
+```bash
 python -m core.qdrant.schema
+```
 
-# Load demo data (optional)
-python quick_setup.py
+This will create the necessary collections in `./qdrant_data/`
 
-# Run the application
+### 5. Run the Application
+```bash
 streamlit run ui/app.py
 ```
 
-Opens at `http://localhost:8501`
+The dashboard will open at `http://localhost:8501`
 
----
+
 
 ## Quick Example
 
